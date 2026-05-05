@@ -1,13 +1,9 @@
-<<<<<<< HEAD
+
 '''
-=======
-  """
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
 Qwen2-VL-7B QLoRA 微调训练脚本
 适用环境: 8GB 显存 (RTX 5060)
 用法:     python train.py
 配置:     修改 train_config.py
-<<<<<<< HEAD
 '''
 
 import json
@@ -16,15 +12,6 @@ import torch
 from torch.utils.data import Dataset
 from transformers import (
     Qwen2_5_VLForConditionalGeneration,
-=======
-"""
-
-import json
-import torch
-from torch.utils.data import Dataset
-from transformers import (
-    Qwen2VLForConditionalGeneration,
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
     AutoProcessor,
     BitsAndBytesConfig,
     TrainingArguments,
@@ -48,22 +35,13 @@ def load_model():
         bnb_4bit_compute_dtype=torch.float16,
         bnb_4bit_use_double_quant=True,
     )
-
-<<<<<<< HEAD
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-=======
-    model = Qwen2VLForConditionalGeneration.from_pretrained(
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
         cfg.MODEL_NAME,
         quantization_config=bnb_config,
         device_map="auto",
         torch_dtype=torch.float16,
     )
-<<<<<<< HEAD
     model.config.use_cache = False
-=======
-
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
     processor = AutoProcessor.from_pretrained(
         cfg.MODEL_NAME,
         min_pixels=cfg.MIN_PIXELS,
@@ -80,17 +58,15 @@ def load_model():
 def setup_lora(model):
     model = prepare_model_for_kbit_training(
         model,
-        use_gradient_checkpointing=True,ora_config = LoraConfig(
+        use_gradient_checkpointing=True)
+    lora_config = LoraConfig(
         r=cfg.LORA_R,
         lora_alpha=cfg.LORA_ALPHA,
         lora_dropout=cfg.LORA_DROPOUT,
         bias="none",
         task_type="CAUSAL_LM",
         target_modules=cfg.LORA_TARGET_MODULES,
-<<<<<<< HEAD
         exclude_modules=["visual.*"],  # 排除视觉编码器
-=======
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
     )
 
     model = get_peft_model(model, lora_config)
@@ -162,7 +138,6 @@ class VLDataset(Dataset):
             messages.append({"role": role, "content": content})
 
         # processor 处理
-<<<<<<< HEAD
         prompt_text = self.processor.apply_chat_template([messages[0]],tokenize=False, add_generation_prompt=True)
         prompt_ids = self.processor.tokenizer(prompt_text, add_special_tokens=False)["input_ids"]
         prompt_len = len(prompt_ids)
@@ -173,16 +148,6 @@ class VLDataset(Dataset):
 
         inputs = self.processor(
             text=[full_text],
-=======
-        text = self.processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=False
-        )
-
-        image_inputs, video_inputs = process_vision_info(messages)
-
-        inputs = self.processor(
-            text=[text],
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
             images=image_inputs if image_inputs else None,
             videos=video_inputs if video_inputs else None,
             padding="max_length",
@@ -190,18 +155,11 @@ class VLDataset(Dataset):
             max_length=cfg.MAX_LENGTH,
             return_tensors="pt",
         )
-<<<<<<< HEAD
-=======
-
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
         # 构建 labels (和 input_ids 一致, Trainer 会自动做 shift)
         input_ids = inputs["input_ids"].squeeze(0)
         attention_mask = inputs["attention_mask"].squeeze(0)
         labels = input_ids.clone()
-<<<<<<< HEAD
         labels[:prompt_len] = -100
-=======
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
         labels[attention_mask == 0] = -100  # padding 位置不计算 loss
 
         result = {
@@ -215,7 +173,6 @@ class VLDataset(Dataset):
             result["pixel_values"] = inputs["pixel_values"]
         if "image_grid_thw" in inputs and inputs["image_grid_thw"] is not None:
             result["image_grid_thw"] = inputs["image_grid_thw"]
-<<<<<<< HEAD
         return result
 
 
@@ -238,13 +195,6 @@ def vl_data_collator(batch):
         result["image_grid_thw"] = torch.cat([b["image_grid_thw"] for b in batch], dim=0)
 
     return result
-
-=======
-
-        return result
-
-
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
 # ================================================================
 #  第四步: 训练
 # ================================================================
@@ -257,10 +207,6 @@ def train():
 
     # 加载数据
     dataset = VLDataset(cfg.TRAIN_DATA, processor)
-<<<<<<< HEAD
-=======
-
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
     # 训练参数
     training_args = TrainingArguments(
         output_dir=cfg.OUTPUT_DIR,
@@ -289,13 +235,8 @@ def train():
         model=model,
         args=training_args,
         train_dataset=dataset,
-<<<<<<< HEAD
         data_collator=vl_data_collator,
     )
-=======
-    )
-
->>>>>>> b8ff13eabd83678100471195532f1f2e004ea52c
     print("\n" + "=" * 50)
     print("  开始训练")
     print("=" * 50)
