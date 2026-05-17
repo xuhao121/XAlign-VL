@@ -58,7 +58,7 @@ def load_model():
 def setup_lora(model):
     model = prepare_model_for_kbit_training(
         model,
-        use_gradient_checkpointing=True)
+        use_gradient_checkpointing=False)
     lora_config = LoraConfig(
         r=cfg.LORA_R,
         lora_alpha=cfg.LORA_ALPHA,
