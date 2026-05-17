@@ -123,24 +123,16 @@ class VLDataset(Dataset):
         item = self.data[idx]
         conversations = item["conversations"]
 
-        # 标准化消息格式
         messages = []
         for turn in conversations:
             role = turn["role"]
             raw_content = turn["content"]
-
-            # 兼容 content 是字符串的情况
             if isinstance(raw_content, str):
                 content = [{"type": "text", "text": raw_content}]
             else:
                 content = raw_content
-
             messages.append({"role": role, "content": content})
 
-        # processor 处理
-        prompt_text = self.processor.apply_chat_template([messages[0]],tokenize=False, add_generation_prompt=True)
-        prompt_ids = self.processor.tokenizer(prompt_text, add_special_tokens=False)["input_ids"]
-        prompt_len = len(prompt_ids)
         full_text = self.processor.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=False
         )
@@ -155,20 +147,31 @@ class VLDataset(Dataset):
             max_length=cfg.MAX_LENGTH,
             return_tensors="pt",
         )
-        # 构建 labels (和 input_ids 一致, Trainer 会自动做 shift)
+
         input_ids = inputs["input_ids"].squeeze(0)
         attention_mask = inputs["attention_mask"].squeeze(0)
         labels = input_ids.clone()
-        labels[:prompt_len] = -100
-        labels[attention_mask == 0] = -100  # padding 位置不计算 loss
 
+        # 用 assistant 标记定位，而不是单独算 prompt_len
+        assistant_token = self.processor.tokenizer.encode(
+            "<|im_start|>assistant\n", add_special_tokens=False
+        )
+        # 在 input_ids 里找这个标记的位置
+        input_list = input_ids.tolist()
+        prompt_len = 0
+        for i in range(len(input_list) - len(assistant_token) + 1):
+            if input_list[i:i + len(assistant_token)] == assistant_token:
+                prompt_len = i + len(assistant_token)
+                break
+
+        labels[:prompt_len] = -100
+        labels[attention_mask == 0] = -100
         result = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
             "labels": labels,
         }
 
-        # 图片/视频相关字段 (可能不存在)
         if "pixel_values" in inputs and inputs["pixel_values"] is not None:
             result["pixel_values"] = inputs["pixel_values"]
         if "image_grid_thw" in inputs and inputs["image_grid_thw"] is not None:
