@@ -1,0 +1,89 @@
+{
+  "trained": {
+    "overall": {
+      "n": 23200,
+      "bertscore_f1_mean": 0.7997578069901672,
+      "bertscore_f1_std": 0.05861627515532135
+    },
+    "per_language": {
+      "EN": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.8127190574695324,
+        "bertscore_f1_std": 0.054178262799223796
+      },
+      "DE": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.798884691328838,
+        "bertscore_f1_std": 0.05887230827368438
+      },
+      "FR": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.8110021298507164,
+        "bertscore_f1_std": 0.05439801384997431
+      },
+      "CS": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.776425349311582,
+        "bertscore_f1_std": 0.059541011697681036
+      }
+    }
+  },
+  "nontrained": {
+    "overall": {
+      "n": 23200,
+      "bertscore_f1_mean": 0.7593259567317777,
+      "bertscore_f1_std": 0.059641193237305636
+    },
+    "per_language": {
+      "EN": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.8017581519998354,
+        "bertscore_f1_std": 0.052242347079387554
+      },
+      "DE": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.752263004800369,
+        "bertscore_f1_std": 0.04945219169694393
+      },
+      "FR": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.7775531280862874,
+        "bertscore_f1_std": 0.04401925388035381
+      },
+      "CS": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.7057295420406193,
+        "bertscore_f1_std": 0.04540481735444286
+      }
+    }
+  },
+  "nontrained_translated": {
+    "overall": {
+      "n": 23200,
+      "bertscore_f1_mean": 0.7876151752857299,
+      "bertscore_f1_std": 0.05598570732044281
+    },
+    "per_language": {
+      "EN": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.8017581521437086,
+        "bertscore_f1_std": 0.052242346665661306
+      },
+      "DE": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.7889140330409181,
+        "bertscore_f1_std": 0.0557695729080713
+      },
+      "FR": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.796674379788596,
+        "bertscore_f1_std": 0.0518355901944687
+      },
+      "CS": {
+        "n": 5800,
+        "bertscore_f1_mean": 0.7631141361696967,
+        "bertscore_f1_std": 0.055933437004595334
+      }
+    }
+  }
+}

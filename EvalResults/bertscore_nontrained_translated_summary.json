@@ -1,0 +1,29 @@
+{
+  "overall": {
+    "n": 23200,
+    "bertscore_f1_mean": 0.7876151752857299,
+    "bertscore_f1_std": 0.05598570732044281
+  },
+  "per_language": {
+    "EN": {
+      "n": 5800,
+      "bertscore_f1_mean": 0.8017581521437086,
+      "bertscore_f1_std": 0.052242346665661306
+    },
+    "DE": {
+      "n": 5800,
+      "bertscore_f1_mean": 0.7889140330409181,
+      "bertscore_f1_std": 0.0557695729080713
+    },
+    "FR": {
+      "n": 5800,
+      "bertscore_f1_mean": 0.796674379788596,
+      "bertscore_f1_std": 0.0518355901944687
+    },
+    "CS": {
+      "n": 5800,
+      "bertscore_f1_mean": 0.7631141361696967,
+      "bertscore_f1_std": 0.055933437004595334
+    }
+  }
+}
