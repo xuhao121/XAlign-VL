@@ -1,0 +1,10 @@
+# 评估部分依赖
+# 安装: pip install -r eval/requirements.txt
+# spaCy 英文模型还需单独下载: python -m spacy download en_core_web_sm
+bert-score
+sentence-transformers
+transformers
+torch
+spacy
+scipy
+pandas
