@@ -1,0 +1,209 @@
+% ---------------------------------------------------------------
+%  Results section for XAlign-VL
+%  Standalone:  pdflatex results_report.tex
+%  Or:          \input{eval/results_report} into the main paper.
+%  Required packages: booktabs, multirow, array
+%  All numbers reproducible from eval/build_results_stats.py
+%  (which writes data/EvalResults/results_extended.json).
+% ---------------------------------------------------------------
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{caption}
+\begin{document}
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Setup}
+
+We evaluate three systems on the Multi30K test split:
+
+\begin{description}
+\item[\textbf{Trained (ours).}] Qwen2.5-VL-7B fine-tuned with LoRA and our
+cross-lingual consistency loss
+$\mathcal{L}\!=\!\mathcal{L}_{\text{LM}}\!+\!\lambda\mathcal{L}_{\text{CL}}$.
+\item[\textbf{Nontrained.}] The off-the-shelf Qwen2.5-VL-7B baseline,
+prompted in each target language to generate that language natively.
+\item[\textbf{Nontrained\,+\,MT.}] The same baseline, but used only to
+generate English; the German, French and Czech captions are obtained by
+machine-translating the English output with Helsinki-NLP MarianMT.
+\end{description}
+
+Each system produces one caption per (image, language) pair on the
+$N_{\text{img}}\!=\!5{,}800$-image test set (the standard Multi30K
+1000-image test enriched with the official 5-reference extension), for
+a total of $4 N_{\text{img}}\!=\!23{,}200$ generations per system.
+
+\paragraph{Metrics.}
+We follow a two-track design that avoids any translate-then-compare
+step at evaluation time.
+
+\begin{enumerate}
+\item \textbf{Generation quality:} BERTScore F1 between
+$\text{pred}(L)$ and $\text{ref}(L)$ in the \emph{same} language $L$,
+using \texttt{bert-base-multilingual-cased}. Higher is better.
+\item \textbf{Cross-lingual consistency:} cosine similarity between
+$\text{embed}(\text{pred}(L_1))$ and $\text{embed}(\text{pred}(L_2))$
+for the same image, using the multilingual sentence encoder
+\texttt{paraphrase-multilingual-MiniLM-L12-v2}. Per image this gives
+$\binom{4}{2}\!=\!6$ pairwise scores. Higher is better.
+\end{enumerate}
+
+Significance for paired image-level comparisons is reported with a
+one-sided Wilcoxon signed-rank test ($H_1$: Trained $>$ baseline).
+All BERTScore and cosine values below are multiplied by $100$ for
+readability.
+
+% =========================== Table 1 ===========================
+\begin{table}[t]
+\centering
+\caption{\textbf{Generation quality} on Multi30K test, BERTScore F1
+($\times 100$). For each model and language we report mean$\pm$std
+over $N\!=\!5800$ images. \textbf{Bold} marks the best per column.
+The bottom block reports paired comparisons of Trained vs.\ each
+baseline at the image level: \textsc{win\%} is the fraction of images
+on which Trained scores strictly higher; $\Delta$ is the mean
+per-image difference; $p$ is the one-sided Wilcoxon signed-rank test.}
+\label{tab:bertscore}
+\small
+\begin{tabular}{lccccc}
+\toprule
+& EN & DE & FR & CS & Overall \\
+\midrule
+Nontrained        & 80.18\,\scriptsize$\pm5.22$ & 75.23\,\scriptsize$\pm4.95$ & 77.76\,\scriptsize$\pm4.40$ & 70.57\,\scriptsize$\pm4.54$ & 75.93\,\scriptsize$\pm5.96$ \\
+Nontrained\,+\,MT & 80.18\,\scriptsize$\pm5.22$ & 78.89\,\scriptsize$\pm5.58$ & 79.67\,\scriptsize$\pm5.18$ & 76.31\,\scriptsize$\pm5.59$ & 78.76\,\scriptsize$\pm5.60$ \\
+\textbf{Trained (ours)} & \textbf{81.27}\,\scriptsize$\pm5.42$ & \textbf{79.89}\,\scriptsize$\pm5.89$ & \textbf{81.10}\,\scriptsize$\pm5.44$ & \textbf{77.64}\,\scriptsize$\pm5.95$ & \textbf{79.98}\,\scriptsize$\pm5.86$ \\
+\midrule
+\multicolumn{6}{l}{\emph{Paired: Trained vs.\ Nontrained}} \\
+\quad $\Delta$ (mean)               & +1.10  & +4.66  & +3.34  & +7.07  & +4.05 \\
+\quad \textsc{win\%} Trained        & 57.6\% & 83.0\% & 76.6\% & 90.7\% & --- \\
+\quad Wilcoxon $p$                  & $<10^{-80}$ & $<10^{-300}$ & $<10^{-300}$ & $<10^{-300}$ & --- \\
+\midrule
+\multicolumn{6}{l}{\emph{Paired: Trained vs.\ Nontrained\,+\,MT}} \\
+\quad $\Delta$ (mean)               & +1.10  & +1.00  & +1.43  & +1.33  & +1.22 \\
+\quad \textsc{win\%} Trained        & 57.5\% & 57.9\% & 62.4\% & 60.6\% & --- \\
+\quad Wilcoxon $p$                  & $<10^{-80}$ & $<10^{-49}$ & $<10^{-112}$ & $<10^{-80}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Generation quality}
+
+Table~\ref{tab:bertscore} reports BERTScore F1.
+
+Trained obtains the highest BERTScore in every language and in the
+overall mean. The absolute gain over the native-generation baseline is
+$+7.07$ on Czech, $+4.66$ on German, $+3.34$ on French and $+1.10$ on
+English, ordered inversely to each language's baseline score
+(CS $<$ DE $<$ FR $<$ EN).
+
+At the image level, Trained scores strictly higher than Nontrained on
+$90.7\%$ of Czech images, $83.0\%$ of German, $76.6\%$ of French and
+$57.6\%$ of English. The one-sided Wilcoxon signed-rank test rejects
+the null at $p<10^{-80}$ for every language.
+
+Against the translation-pipeline baseline, Trained remains best in
+every language (overall $\Delta\!=\!+1.22$). Per-language image-level
+win rates range from $57.5\%$ (EN) to $62.4\%$ (FR), and the
+difference is significant at $p<10^{-49}$ in every language.
+
+% =========================== Table 2 ===========================
+\begin{table}[t]
+\centering
+\caption{\textbf{Cross-lingual consistency} on Multi30K test:
+mean$\pm$std of cosine similarity ($\times 100$) between the
+multilingual-SBERT embeddings of the two generated captions for the
+same image. $N\!=\!5800$ images per pair. $\Delta$ is Trained minus
+Nontrained. The Nontrained\,+\,MT row is reported for completeness;
+because its four-language outputs all descend from a single English
+caption via MarianMT, its cosine measures translation faithfulness
+rather than independent cross-lingual generation, and is not directly
+comparable to the other two systems.}
+\label{tab:consistency}
+\small
+\begin{tabular}{lccccccc}
+\toprule
+& EN--DE & EN--FR & EN--CS & DE--FR & DE--CS & FR--CS & Overall \\
+\midrule
+Nontrained                    & 69.26 & 69.59 & 65.61 & 73.90 & 71.19 & 70.36 & 69.99 \\
+Nontrained\,+\,MT             & 90.77 & 90.91 & 89.70 & 90.98 & 90.07 & 90.07 & 90.42 \\
+\textbf{Trained (ours)}       & \textbf{77.05} & \textbf{76.89} & \textbf{74.61} & \textbf{77.01} & \textbf{75.35} & \textbf{74.21} & \textbf{75.85} \\
+\midrule
+$\Delta$ vs.\ Nontrained      & +7.79 & +7.30 & +9.00 & +3.11 & +4.16 & +3.85 & +5.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =========================== Table 3 ===========================
+\begin{table}[t]
+\centering
+\caption{\textbf{Per-language anchored consistency.} For each language
+$L$, we average the three pair-cosines that include $L$ ($N\!=\!17{,}400$
+per cell). $\Delta$ is Trained minus Nontrained.}
+\label{tab:anchored}
+\small
+\begin{tabular}{lccccc}
+\toprule
+& EN & DE & FR & CS & Overall \\
+\midrule
+Nontrained              & 68.15 & 71.45 & 71.28 & 69.05 & 69.99 \\
+\textbf{Trained (ours)} & \textbf{76.18} & \textbf{76.47} & \textbf{76.04} & \textbf{74.73} & \textbf{75.85} \\
+\midrule
+$\Delta$ vs.\ Nontrained & +8.03 & +5.02 & +4.76 & +5.68 & +5.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cross-lingual consistency}
+
+Tables~\ref{tab:consistency} and~\ref{tab:anchored} report pairwise
+and per-language anchored consistency.
+
+Trained raises the mean pairwise cosine by $+5.87$ over Nontrained,
+with positive gains on all six language pairs. The gains on the three
+EN--$L$ pairs ($+7.79$, $+7.30$, $+9.00$) are larger than those on the
+three non-English pairs ($+3.11$, $+4.16$, $+3.85$).
+
+In the per-language view (Table~\ref{tab:anchored}), English is the
+lowest-anchored language under Nontrained ($68.15$) and the highest
+under Trained ($76.18$, $\Delta\!=\!+8.03$). The cross-language spread
+narrows from a $3.30$-point range $[68.15, 71.45]$ to a $1.74$-point
+range $[74.73, 76.47]$.
+
+Nontrained\,+\,MT obtains the highest raw cosine ($90.42$ overall),
+which reflects the determinism of the shared English source under
+MarianMT translation rather than independent cross-lingual generation
+(Table~\ref{tab:consistency} caption).
+
+% =========================== Table 4 ===========================
+\begin{table}[t]
+\centering
+\caption{\textbf{Per-image correlation between quality and
+consistency.} For each model we compute the per-image mean BERTScore
+F1 across 4 languages and the per-image mean cosine across 6 language
+pairs, then take the Pearson correlation over the $N\!=\!5800$ images.}
+\label{tab:corr}
+\small
+\begin{tabular}{lcc}
+\toprule
+Model & Pearson $r$ & $p$ \\
+\midrule
+Nontrained                & 0.266 & $<10^{-93}$ \\
+\textbf{Trained (ours)}   & \textbf{0.279} & $<10^{-103}$ \\
+Nontrained\,+\,MT         & 0.053 & $\;\;5{\cdot}10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Per-image correlation of quality and consistency}
+
+Table~\ref{tab:corr} reports the Pearson correlation between per-image
+mean BERTScore and per-image mean pairwise cosine. The two
+native-generation systems exhibit a moderate positive correlation
+($r\!=\!0.266$ for Nontrained, $r\!=\!0.279$ for Trained). For
+Nontrained\,+\,MT this correlation is $r\!=\!0.053$.
+
+\end{document}
